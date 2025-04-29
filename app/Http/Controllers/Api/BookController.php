@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Http\Resources\BookResource;
+use App\Http\Requests\BookRequest;
+use App\Enums\BookStatus;
+use Illuminate\Validation\Rules\Enum;
+
 
 class BookController extends Controller
 {
@@ -20,6 +24,12 @@ class BookController extends Controller
      */
     public function index()
     {
+        $a = 'Proccessing';
+        if ($a === BookStatus::Completed) {
+            $request->validate([
+                'status' => ['required', new Enum(BookStatus::class)],
+            ]);
+        }
         return BookResource::collection(Book::all());
     }
 
@@ -32,14 +42,10 @@ class BookController extends Controller
      *
      * @response 201 {"message": "Book created successfully"}
      */
-    public function store(Request $request)
+    public function store(BookRequest $request)
     {
-        $data = $request->validate([
-            'title' => 'required',
-            'author' => 'required',
-            'name' => 'required|integer',
-        ]);
-
+    //    dd($request->all());
+        $data = $request->all();
         $book = Book::create($data);
         return new BookResource($book);
     }
@@ -65,14 +71,9 @@ class BookController extends Controller
      *
      * @response 200 {"message": "Book updated successfully"}
      */
-    public function update(Request $request, Book $book)
+    public function update(BookRequest $request, Book $book)
     {
-        $data = $request->validate([
-            'title' => 'sometimes|required',
-            'author' => 'sometimes|required',
-            'name' => 'sometimes|required|integer',
-        ]);
-
+        $data = $request->all();
         $book->update($data);
         return new BookResource($book);
     }
